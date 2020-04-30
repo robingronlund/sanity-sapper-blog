@@ -37,7 +37,7 @@
   <title>Blog</title>
 </svelte:head>
 
-<h1>Recent posts</h1>
+<h1>All kewl posts</h1>
 <div class="posts">
   {#each posts as post}
     <PostItem {post} />

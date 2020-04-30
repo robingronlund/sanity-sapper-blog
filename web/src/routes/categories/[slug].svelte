@@ -9,20 +9,27 @@
     // this file is called [slug].html
     const { slug } = params;
 
-    const post = await client
-      .fetch(
-        '*[_type == "post" && defined(slug.current) && publishedAt < now()]|order(publishedAt desc)',
-        { slug }
-      )
-      .then(posts => {
-        return { posts };
-      })
+    const category = await client
+      .fetch('*[_type == "category" && slug.current == $slug][0]', { slug })
       .catch(err => this.error(500, err));
+
+    const categoryId = category._id;
+
+    const posts = await client
+      .fetch(
+        '*[_type == "post" && defined(slug.current) && categories[]._ref == $categoryId && publishedAt < now()]|order(publishedAt desc)',
+        { slug, categoryId }
+      )
+      .catch(err => this.error(500, err));
+
+    return { category, posts };
   }
 </script>
 
 <script>
+  export let category;
   export let posts;
+  $: numberOfPosts = posts.length;
 </script>
 
 <style>
@@ -41,10 +48,13 @@
 </style>
 
 <svelte:head>
-  <title>yeah</title>
+  <title>{category.title}</title>
 </svelte:head>
 
-<h1>yeah</h1>
+<h1>{category.title}</h1>
+{#if numberOfPosts > 1}
+  <p>There are {posts.length} awesome posts to read in this category!</p>
+{/if}
 
 <div class="posts">
   {#each posts as post}
